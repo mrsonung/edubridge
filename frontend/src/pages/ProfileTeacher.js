@@ -25,7 +25,7 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
     if (!propUser && viewingId) {
       axios.get(`${process.env.REACT_APP_API_URL}/auth/teacher/${viewingId}`)
         .then(res => {
-          console.log("TEACHER:", res.data);
+          // console.log("TEACHER:", res.data);
           setTeacher(res.data);
           setForm(res.data);
         })
@@ -37,11 +37,11 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
   useEffect(() => {
     if (!teacher?._id) return;
 
-    console.log("CALL API WITH:", teacher._id);
+    // console.log("CALL API WITH:", teacher._id);
 
     axios.get(`${process.env.REACT_APP_API_URL}/booking/teacher/${teacher._id}`)
       .then(res => {
-        console.log("BOOKINGS RESPONSE:", res.data);
+        // console.log("BOOKINGS RESPONSE:", res.data);
         setBookings(res.data);
       })
       .catch(err => console.log("BOOKING ERROR:", err));
