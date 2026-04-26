@@ -3,26 +3,26 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-const ProfileTeacher = ({ user: propUser }) => {
+const ProfileTeacher = ({ teacher: propteacher }) => {
   const { id } = useParams();
 
-  const [teacher, setTeacher] = useState(propUser || null);
+  const [teacher, setTeacher] = useState(propteacher || null);
   const [editMode, setEditMode] = useState(false);
-  const [form, setForm] = useState(propUser || {});
+  const [form, setForm] = useState(propteacher || {});
   const [profilePic, setProfilePic] = useState(null);
   const [bookings, setBookings] = useState([]);
 
-  const loggedInUser = JSON.parse(localStorage.getItem('user'));
-  const loggedInUserId = loggedInUser?._id;
+  const loggedInteacher = JSON.parse(localStorage.getItem('teacher'));
+  const loggedInteacherId = loggedInteacher?._id;
   const role = localStorage.getItem('role');
 
-  const viewingId = id || propUser?._id;
-  const isOwner = role === 'teacher' && loggedInUserId === viewingId;
+  const viewingId = id || propteacher?._id;
+  const isOwner = role === 'teacher' && loggedInteacherId === viewingId;
 
   const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
 
   useEffect(() => {
-    if (!propUser && viewingId) {
+    if (!propteacher && viewingId) {
       axios.get(`${process.env.REACT_APP_API_URL}/auth/teacher/${viewingId}`)
         .then(res => {
           setTeacher(res.data);
@@ -30,7 +30,7 @@ const ProfileTeacher = ({ user: propUser }) => {
         })
         .catch(() => setTeacher(null));
     }
-  }, [propUser, viewingId]);
+  }, [propteacher, viewingId]);
 
   useEffect(() => {
     if (!teacher?._id) return;
@@ -77,7 +77,7 @@ const ProfileTeacher = ({ user: propUser }) => {
       setEditMode(false);
       setProfilePic(null);
 
-      localStorage.setItem("user", JSON.stringify(res.data));
+      localStorage.setItem("teacher", JSON.stringify(res.data));
 
       toast.success("Profile updated");
     } catch {
@@ -123,7 +123,7 @@ const ProfileTeacher = ({ user: propUser }) => {
         try {
           await axios.post(`${process.env.REACT_APP_API_URL}/booking/create`, {
             teacherId: teacher._id,
-            studentId: loggedInUserId,
+            studentId: loggedInteacherId,
             paymentId: response.razorpay_payment_id,
             amount: 500,
             status: "success"
