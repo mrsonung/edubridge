@@ -102,7 +102,7 @@ const DashboardStudent = () => {
       )}
 
       {/* Toast container */}
-      {/* <ToastContainer position="top-right" autoClose={2500} hideProgressBar={false} /> */}
+      <ToastContainer position="top-right" autoClose={2500} hideProgressBar={false} />
     </div>
   );
 };

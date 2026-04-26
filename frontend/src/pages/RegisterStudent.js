@@ -62,7 +62,7 @@ const RegisterStudent = () => {
         <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
       </div>
 
-      {/* <ToastContainer position="top-center" /> */}
+      <ToastContainer position="top-center" />
     </>
   );
 };

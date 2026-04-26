@@ -90,7 +90,7 @@ const ProfileStudent = ({ user, updateUser }) => {
           <button className="btn-edit-profile" onClick={() => setEditMode(true)}>Edit Profile</button>
         </>
       )}
-      {/* <ToastContainer position="top-right" autoClose={2500} hideProgressBar={false} /> */}
+      <ToastContainer position="top-right" autoClose={2500} hideProgressBar={false} />
     </div>
   );
 };
