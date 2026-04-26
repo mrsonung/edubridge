@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Payment from "./pages/Payment";
 
 import Home from './pages/Home';
 import RegisterStudent from './pages/RegisterStudent';
@@ -44,7 +45,8 @@ function App() {
                 : <DashboardStudent />
             }
           />
-
+          
+          <Route path="/payment" element={<Payment />} />
         </Routes>
       </Router>
     </GoogleOAuthProvider>
