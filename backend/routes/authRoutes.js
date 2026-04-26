@@ -9,10 +9,10 @@ const authenticate = require('../middleware/authenticate');
 
 const router = express.Router();
 
+// ✅ BASE URL (IMPORTANT FIX)
+const BASE_URL = process.env.BASE_URL || "https://edubridge-backend-hs3e.onrender.com";
 
-// =======================
-// 🔥 MULTER CONFIG
-// =======================
+// ✅ MULTER CONFIG
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/');
@@ -23,7 +23,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-
 
 // =======================
 // 👨‍🎓 STUDENT REGISTER
@@ -54,7 +53,6 @@ router.post('/register/student', async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
-
 
 // =======================
 // 👨‍🏫 TEACHER REGISTER
@@ -90,7 +88,6 @@ router.post('/register/teacher', async (req, res) => {
   }
 });
 
-
 // =======================
 // 🔐 LOGIN
 // =======================
@@ -117,16 +114,15 @@ router.post('/login', async (req, res) => {
   res.json({ token, user });
 });
 
-
 // =======================
-// 👨‍🎓 UPDATE STUDENT (FIXED)
+// 👨‍🎓 UPDATE STUDENT
 // =======================
 router.put('/update/student/:id', upload.single('profilePic'), async (req, res) => {
   try {
     const updateFields = { ...req.body };
 
     if (req.file) {
-      updateFields.profilePic = `http://localhost:5000/uploads/${req.file.filename}`;
+      updateFields.profilePic = `${BASE_URL}/uploads/${req.file.filename}`;
     }
 
     if (updateFields.subjects && typeof updateFields.subjects === "string") {
@@ -142,21 +138,19 @@ router.put('/update/student/:id', upload.single('profilePic'), async (req, res) 
     res.json(updated);
 
   } catch (err) {
-    console.log("STUDENT UPDATE ERROR:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-
 // =======================
-// 👨‍🏫 UPDATE TEACHER (FIXED)
+// 👨‍🏫 UPDATE TEACHER
 // =======================
 router.put('/update/teacher/:id', upload.single('profilePic'), async (req, res) => {
   try {
     const updateFields = { ...req.body };
 
     if (req.file) {
-      updateFields.profilePic = `http://localhost:5000/uploads/${req.file.filename}`;
+      updateFields.profilePic = `${BASE_URL}/uploads/${req.file.filename}`;
     }
 
     if (updateFields.grades && typeof updateFields.grades === "string") {
@@ -176,11 +170,9 @@ router.put('/update/teacher/:id', upload.single('profilePic'), async (req, res) 
     res.json(updated);
 
   } catch (err) {
-    console.log("TEACHER UPDATE ERROR:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // =======================
 // 📋 GET ALL TEACHERS
@@ -193,7 +185,6 @@ router.get('/teachers', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // =======================
 // 🔍 GET SINGLE TEACHER
@@ -213,18 +204,15 @@ router.get('/teacher/:id', async (req, res) => {
   }
 });
 
-
 // =======================
 // 🗑 DELETE ACCOUNT
 // =======================
 router.delete('/delete-account', authenticate, async (req, res) => {
   try {
-    let deleted;
-
     if (req.role === 'student') {
-      deleted = await Student.findByIdAndDelete(req.user._id);
+      await Student.findByIdAndDelete(req.user._id);
     } else if (req.role === 'teacher') {
-      deleted = await Teacher.findByIdAndDelete(req.user._id);
+      await Teacher.findByIdAndDelete(req.user._id);
     }
 
     res.json({ message: "Account deleted" });
