@@ -138,9 +138,9 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
           });
 
           // 🔥 refresh bookings
-          const res = await axios.get(
-            `http://localhost:5000/booking/teacher/${teacher._id}`
-          );
+         const res = await axios.get(
+  `${process.env.REACT_APP_API_URL}/booking/teacher/${teacher._id}`
+);
 
           console.log("UPDATED BOOKINGS:", res.data);
           setBookings(res.data);
