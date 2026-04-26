@@ -3,26 +3,26 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-const ProfileTeacher = ({ teacher: propteacher }) => {
+const ProfileTeacher = ({ user: propUser }) => {
   const { id } = useParams();
 
-  const [teacher, setTeacher] = useState(propteacher || null);
+  const [teacher, setTeacher] = useState(propUser || null);
   const [editMode, setEditMode] = useState(false);
-  const [form, setForm] = useState(propteacher || {});
+  const [form, setForm] = useState(propUser || {});
   const [profilePic, setProfilePic] = useState(null);
   const [bookings, setBookings] = useState([]);
 
-  const loggedInteacher = JSON.parse(localStorage.getItem('teacher'));
-  const loggedInteacherId = loggedInteacher?._id;
+  const loggedInUser = JSON.parse(localStorage.getItem('user'));
+  const loggedInUserId = loggedInUser?._id;
   const role = localStorage.getItem('role');
 
-  const viewingId = id || propteacher?._id;
-  const isOwner = role === 'teacher' && loggedInteacherId === viewingId;
+  const viewingId = id || propUser?._id;
+  const isOwner = role === 'teacher' && loggedInUserId === viewingId;
 
   const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
 
   useEffect(() => {
-    if (!propteacher && viewingId) {
+    if (!propUser && viewingId) {
       axios.get(`${process.env.REACT_APP_API_URL}/auth/teacher/${viewingId}`)
         .then(res => {
           setTeacher(res.data);
@@ -30,7 +30,7 @@ const ProfileTeacher = ({ teacher: propteacher }) => {
         })
         .catch(() => setTeacher(null));
     }
-  }, [propteacher, viewingId]);
+  }, [propUser, viewingId]);
 
   useEffect(() => {
     if (!teacher?._id) return;
@@ -52,10 +52,7 @@ const ProfileTeacher = ({ teacher: propteacher }) => {
     e.preventDefault();
 
     const data = new FormData();
-
-    Object.keys(form).forEach(key => {
-      data.append(key, form[key]);
-    });
+    Object.keys(form).forEach(key => data.append(key, form[key]));
 
     if (profilePic) data.append("profilePic", profilePic);
 
@@ -77,7 +74,7 @@ const ProfileTeacher = ({ teacher: propteacher }) => {
       setEditMode(false);
       setProfilePic(null);
 
-      localStorage.setItem("teacher", JSON.stringify(res.data));
+      localStorage.setItem("user", JSON.stringify(res.data));
 
       toast.success("Profile updated");
     } catch {
@@ -100,7 +97,6 @@ const ProfileTeacher = ({ teacher: propteacher }) => {
       window.location.href = "/login";
       return;
     }
-
     openPayment();
   };
 
@@ -123,7 +119,7 @@ const ProfileTeacher = ({ teacher: propteacher }) => {
         try {
           await axios.post(`${process.env.REACT_APP_API_URL}/booking/create`, {
             teacherId: teacher._id,
-            studentId: loggedInteacherId,
+            studentId: loggedInUserId,
             paymentId: response.razorpay_payment_id,
             amount: 500,
             status: "success"
@@ -147,14 +143,14 @@ const ProfileTeacher = ({ teacher: propteacher }) => {
       <h2>Teacher Profile</h2>
 
       <img
-        src={teacher.profilePic || "/default_profile.png"}
+        src={teacher.profilePic || "https://via.placeholder.com/120x120.png?text=No+Image"}
         alt="Profile"
         className="profile-pic"
         key={teacher.profilePic}
       />
 
       {editMode ? (
-         <form onSubmit={handleSave}>
+        <form onSubmit={handleSave}>
           <input name="name" value={form.name || ''} onChange={handleChange} placeholder="Name" />
           <input name="qualification" value={form.qualification || ''} onChange={handleChange} placeholder="Qualification" />
           <input name="subjects" value={form.subjects || ''} onChange={handleChange} placeholder="Subjects" />
