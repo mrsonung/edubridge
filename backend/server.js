@@ -11,11 +11,16 @@ const bookingRoutes = require("./routes/bookingRoutes");
 
 const app = express();
 
+// ✅ CORS (SUPER FIX)
 app.use(cors({
-  origin: "https://edubridge-ruby.vercel.app",
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: ["https://edubridge-ruby.vercel.app"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
+
+// ✅ HANDLE PREFLIGHT (IMPORTANT)
+app.options("*", cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -33,15 +38,8 @@ app.get("/", (req, res) => {
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected!"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+  .catch((err) => console.error(err));
 
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ error: "Something went wrong" });
-});
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(process.env.PORT || 5000, () => {
+  console.log("Server running 🚀");
 });
