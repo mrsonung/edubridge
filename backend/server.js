@@ -11,16 +11,10 @@ const bookingRoutes = require("./routes/bookingRoutes");
 
 const app = express();
 
-// ✅ CORS (SUPER FIX)
 app.use(cors({
-  origin: ["https://edubridge-ruby.vercel.app"],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: "https://edubridge-ruby.vercel.app",
   credentials: true
 }));
-
-// ✅ HANDLE PREFLIGHT (IMPORTANT)
-app.options("*", cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
