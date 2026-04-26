@@ -16,16 +16,16 @@ const ProfileTeacher = ({ user: propUser }) => {
   const loggedInUser = JSON.parse(localStorage.getItem('user'));
   const loggedInUserId = loggedInUser?._id;
   const role = localStorage.getItem('role');
-
+const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
   const viewingId = id || propUser?._id;
   const isOwner = role === 'teacher' && loggedInUserId === viewingId;
 
-  const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
-
+  // ✅ Load teacher
   useEffect(() => {
     if (!propUser && viewingId) {
       axios.get(`${process.env.REACT_APP_API_URL}/auth/teacher/${viewingId}`)
         .then(res => {
+          // console.log("TEACHER:", res.data);
           setTeacher(res.data);
           setForm(res.data);
         })
@@ -33,12 +33,19 @@ const ProfileTeacher = ({ user: propUser }) => {
     }
   }, [propUser, viewingId]);
 
+  // ✅ LOAD BOOKINGS (MAIN FIX)
   useEffect(() => {
     if (!teacher?._id) return;
 
+    // console.log("CALL API WITH:", teacher._id);
+
     axios.get(`${process.env.REACT_APP_API_URL}/booking/teacher/${teacher._id}`)
-      .then(res => setBookings(res.data))
-      .catch(() => {});
+      .then(res => {
+        // console.log("BOOKINGS RESPONSE:", res.data);
+        setBookings(res.data);
+      })
+      .catch(err => console.log("BOOKING ERROR:", err));
+
   }, [teacher?._id]);
 
   if (!teacher) return <div>Loading...</div>;
@@ -53,22 +60,22 @@ const ProfileTeacher = ({ user: propUser }) => {
     e.preventDefault();
 
     const data = new FormData();
+
     Object.keys(form).forEach(key => {
       data.append(key, form[key]);
     });
 
-    if (profilePic) {
-      data.append("profilePic", profilePic);
-    }
+    if (profilePic) data.append("profilePic", profilePic);
 
     try {
       const token = localStorage.getItem("token");
 
-      const res = await axios.put(
-        `${process.env.REACT_APP_API_URL}/auth/update/teacher/${teacher._id}`,
+     const res = await axios.put(
+  `${process.env.REACT_APP_API_URL}/auth/update/teacher/${teacher._id}`,
         data,
         {
           headers: {
+            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`
           }
         }
@@ -77,14 +84,14 @@ const ProfileTeacher = ({ user: propUser }) => {
       setTeacher(res.data);
       setForm(res.data);
       setEditMode(false);
-      setProfilePic(null);
-
       toast.success("Profile updated");
+
     } catch {
       toast.error("Update failed");
     }
   };
 
+  // ✅ Razorpay
   const loadRazorpay = () =>
     new Promise(resolve => {
       const script = document.createElement("script");
@@ -100,6 +107,7 @@ const ProfileTeacher = ({ user: propUser }) => {
       window.location.href = "/login";
       return;
     }
+
     openPayment();
   };
 
@@ -116,8 +124,9 @@ const ProfileTeacher = ({ user: propUser }) => {
       amount: 50000,
       currency: "INR",
       name: "EduBridge",
+
       handler: async (response) => {
-        toast.success("Payment Successful");
+        toast.success("Payment Successful 🎉");
 
         try {
           await axios.post(`${process.env.REACT_APP_API_URL}/booking/create`, {
@@ -128,12 +137,17 @@ const ProfileTeacher = ({ user: propUser }) => {
             status: "success"
           });
 
-          const res = await axios.get(
-            `${process.env.REACT_APP_API_URL}/booking/teacher/${teacher._id}`
-          );
+          // 🔥 refresh bookings
+         const res = await axios.get(
+  `${process.env.REACT_APP_API_URL}/booking/teacher/${teacher._id}`
+);
 
+          console.log("UPDATED BOOKINGS:", res.data);
           setBookings(res.data);
-        } catch {}
+
+        } catch (err) {
+          console.log(err);
+        }
       }
     };
 
@@ -143,25 +157,25 @@ const ProfileTeacher = ({ user: propUser }) => {
 
   return (
     <div className="profile-section">
-      <ToastContainer />
+      <ToastContainer position="top-center" />
 
       <h2>Teacher Profile</h2>
 
       <img
-        src={form.profilePic || "/default_profile.png"}
-        alt="Profile"
-        className="profile-pic"
-        key={form.profilePic}
-      />
+  src={user.profilePic || "/default_profile.png"}
+  alt="Profile"
+  className="profile-pic"
+  key={user.profilePic}
+/>
 
       {editMode ? (
         <form onSubmit={handleSave}>
-          <input name="name" value={form.name || ''} onChange={handleChange} />
-          <input name="qualification" value={form.qualification || ''} onChange={handleChange} />
-          <input name="subjects" value={form.subjects || ''} onChange={handleChange} />
-          <input name="experience" value={form.experience || ''} onChange={handleChange} />
-          <input name="location" value={form.location || ''} onChange={handleChange} />
-          <textarea name="bio" value={form.bio || ''} onChange={handleChange} />
+          <input name="name" value={form.name || ''} onChange={handleChange} placeholder="Name" />
+          <input name="qualification" value={form.qualification || ''} onChange={handleChange} placeholder="Qualification" />
+          <input name="subjects" value={form.subjects || ''} onChange={handleChange} placeholder="Subjects" />
+          <input name="experience" value={form.experience || ''} onChange={handleChange} placeholder="Experience" />
+          <input name="location" value={form.location || ''} onChange={handleChange} placeholder="Location" />
+          <textarea name="bio" value={form.bio || ''} onChange={handleChange} placeholder="Bio" />
 
           <input type="file" onChange={handlePicChange} />
 
@@ -177,7 +191,7 @@ const ProfileTeacher = ({ user: propUser }) => {
           <p><strong>Location:</strong> {teacher.location}</p>
 
           {!isOwner && (
-            <button onClick={handleBooking}>
+            <button className='book-btn' onClick={handleBooking}>
               Book Your Slot
             </button>
           )}
@@ -185,10 +199,11 @@ const ProfileTeacher = ({ user: propUser }) => {
           {isOwner && (
             <>
               <h3>My Bookings</h3>
+
               <p>Total Bookings: {bookings.length}</p>
 
               <h3>Earnings</h3>
-              <p>Total Earnings: ₹{totalEarnings}</p>
+    <p>Total Earnings: ₹{totalEarnings}</p>
 
               {bookings.length === 0 ? (
                 <p>No bookings yet</p>
@@ -202,7 +217,7 @@ const ProfileTeacher = ({ user: propUser }) => {
                 </ul>
               )}
 
-              <button onClick={() => setEditMode(true)}>
+              <button className='book-btn' onClick={() => setEditMode(true)}>
                 Edit Profile
               </button>
             </>
