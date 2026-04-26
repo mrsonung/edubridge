@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+// import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { GoogleLogin } from '@react-oauth/google';
+// import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '', role: 'student' });
@@ -19,10 +19,10 @@ const Login = () => {
       localStorage.setItem('role', form.role);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      toast.success('Logged in successfully!');
+      // toast.success('Logged in successfully!');
       navigate('/');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to login.');
+      // toast.error(err.response?.data?.error || 'Failed to login.');
     }
   };
 
