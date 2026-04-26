@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProfileTeacher from './ProfileTeacher';
 import ConfirmationModal from '../components/ConfirmationModal'; // Adjust path if needed
-import { ToastContainer, toast } from 'react-toastify';
+// import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const DashboardTeacher = () => {
