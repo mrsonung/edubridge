@@ -3,23 +3,21 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Student = require('../models/Student');
 const Teacher = require('../models/Teacher');
-const multer = require('multer');
-const path = require('path');
 const authenticate = require('../middleware/authenticate');
+
+const multer = require("multer");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinary");
 
 const router = express.Router();
 
-// ✅ BASE URL (IMPORTANT FIX)
-const BASE_URL = process.env.BASE_URL || "https://edubridge-backend-hs3e.onrender.com";
-
-// ✅ MULTER CONFIG
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
+// ✅ CLOUDINARY STORAGE
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "edubridge",
+    allowed_formats: ["jpg", "jpeg", "png"],
   },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
 });
 
 const upload = multer({ storage });
@@ -122,7 +120,7 @@ router.put('/update/student/:id', upload.single('profilePic'), async (req, res) 
     const updateFields = { ...req.body };
 
     if (req.file) {
-      updateFields.profilePic = `${BASE_URL}/uploads/${req.file.filename}`;
+      updateFields.profilePic = req.file.path; // ✅ Cloudinary URL
     }
 
     if (updateFields.subjects && typeof updateFields.subjects === "string") {
@@ -150,7 +148,7 @@ router.put('/update/teacher/:id', upload.single('profilePic'), async (req, res) 
     const updateFields = { ...req.body };
 
     if (req.file) {
-      updateFields.profilePic = `${BASE_URL}/uploads/${req.file.filename}`;
+      updateFields.profilePic = req.file.path; // ✅ Cloudinary URL
     }
 
     if (updateFields.grades && typeof updateFields.grades === "string") {
