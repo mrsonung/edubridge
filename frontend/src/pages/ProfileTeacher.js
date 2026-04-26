@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 
 const ProfileTeacher = ({ user: propUser }) => {
   const { id } = useParams();
@@ -16,16 +15,16 @@ const ProfileTeacher = ({ user: propUser }) => {
   const loggedInUser = JSON.parse(localStorage.getItem('user'));
   const loggedInUserId = loggedInUser?._id;
   const role = localStorage.getItem('role');
-const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+
   const viewingId = id || propUser?._id;
   const isOwner = role === 'teacher' && loggedInUserId === viewingId;
 
-  // ✅ Load teacher
+  const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+
   useEffect(() => {
     if (!propUser && viewingId) {
       axios.get(`${process.env.REACT_APP_API_URL}/auth/teacher/${viewingId}`)
         .then(res => {
-          // console.log("TEACHER:", res.data);
           setTeacher(res.data);
           setForm(res.data);
         })
@@ -33,19 +32,12 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
     }
   }, [propUser, viewingId]);
 
-  // ✅ LOAD BOOKINGS (MAIN FIX)
   useEffect(() => {
     if (!teacher?._id) return;
 
-    // console.log("CALL API WITH:", teacher._id);
-
     axios.get(`${process.env.REACT_APP_API_URL}/booking/teacher/${teacher._id}`)
-      .then(res => {
-        // console.log("BOOKINGS RESPONSE:", res.data);
-        setBookings(res.data);
-      })
-      .catch(err => console.log("BOOKING ERROR:", err));
-
+      .then(res => setBookings(res.data))
+      .catch(() => {});
   }, [teacher?._id]);
 
   if (!teacher) return <div>Loading...</div>;
@@ -70,12 +62,11 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
     try {
       const token = localStorage.getItem("token");
 
-     const res = await axios.put(
-  `${process.env.REACT_APP_API_URL}/auth/update/teacher/${teacher._id}`,
+      const res = await axios.put(
+        `${process.env.REACT_APP_API_URL}/auth/update/teacher/${teacher._id}`,
         data,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`
           }
         }
@@ -84,14 +75,16 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
       setTeacher(res.data);
       setForm(res.data);
       setEditMode(false);
-      toast.success("Profile updated");
+      setProfilePic(null);
 
+      localStorage.setItem("user", JSON.stringify(res.data));
+
+      toast.success("Profile updated");
     } catch {
       toast.error("Update failed");
     }
   };
 
-  // ✅ Razorpay
   const loadRazorpay = () =>
     new Promise(resolve => {
       const script = document.createElement("script");
@@ -124,9 +117,8 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
       amount: 50000,
       currency: "INR",
       name: "EduBridge",
-
       handler: async (response) => {
-        toast.success("Payment Successful 🎉");
+        toast.success("Payment Successful");
 
         try {
           await axios.post(`${process.env.REACT_APP_API_URL}/booking/create`, {
@@ -137,17 +129,12 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
             status: "success"
           });
 
-          // 🔥 refresh bookings
-         const res = await axios.get(
-  `${process.env.REACT_APP_API_URL}/booking/teacher/${teacher._id}`
-);
+          const res = await axios.get(
+            `${process.env.REACT_APP_API_URL}/booking/teacher/${teacher._id}`
+          );
 
-          console.log("UPDATED BOOKINGS:", res.data);
           setBookings(res.data);
-
-        } catch (err) {
-          console.log(err);
-        }
+        } catch {}
       }
     };
 
@@ -157,19 +144,17 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
 
   return (
     <div className="profile-section">
-      <ToastContainer position="top-center" />
-
       <h2>Teacher Profile</h2>
 
       <img
-  src={user.profilePic || "/default_profile.png"}
-  alt="Profile"
-  className="profile-pic"
-  key={user.profilePic}
-/>
+        src={teacher.profilePic || "/default_profile.png"}
+        alt="Profile"
+        className="profile-pic"
+        key={teacher.profilePic}
+      />
 
       {editMode ? (
-        <form onSubmit={handleSave}>
+         <form onSubmit={handleSave}>
           <input name="name" value={form.name || ''} onChange={handleChange} placeholder="Name" />
           <input name="qualification" value={form.qualification || ''} onChange={handleChange} placeholder="Qualification" />
           <input name="subjects" value={form.subjects || ''} onChange={handleChange} placeholder="Subjects" />
@@ -191,7 +176,7 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
           <p><strong>Location:</strong> {teacher.location}</p>
 
           {!isOwner && (
-            <button className='book-btn' onClick={handleBooking}>
+            <button onClick={handleBooking}>
               Book Your Slot
             </button>
           )}
@@ -199,11 +184,10 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
           {isOwner && (
             <>
               <h3>My Bookings</h3>
-
               <p>Total Bookings: {bookings.length}</p>
 
               <h3>Earnings</h3>
-    <p>Total Earnings: ₹{totalEarnings}</p>
+              <p>Total Earnings: ₹{totalEarnings}</p>
 
               {bookings.length === 0 ? (
                 <p>No bookings yet</p>
@@ -217,7 +201,7 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
                 </ul>
               )}
 
-              <button className='book-btn' onClick={() => setEditMode(true)}>
+              <button onClick={() => setEditMode(true)}>
                 Edit Profile
               </button>
             </>

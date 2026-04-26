@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 
 const ProfileStudent = ({ user, updateUser }) => {
   const [editMode, setEditMode] = useState(false);
-  const [form, setForm] = useState({ ...user });
+  const [form, setForm] = useState(user);
   const [profilePic, setProfilePic] = useState(null);
+
+  useEffect(() => {
+    setForm(user);
+  }, [user]);
 
   const handleChange = e =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -41,7 +44,7 @@ const ProfileStudent = ({ user, updateUser }) => {
 
       localStorage.setItem('user', JSON.stringify(res.data));
       updateUser(res.data);
-      setForm(res.data);
+
       setEditMode(false);
       setProfilePic(null);
 
@@ -56,35 +59,38 @@ const ProfileStudent = ({ user, updateUser }) => {
       <h3>Profile</h3>
 
       <img
-        src={form.profilePic || 'https://via.placeholder.com/120x120.png?text=No+Image'}
+        src={user.profilePic || 'https://via.placeholder.com/120x120.png?text=No+Image'}
         alt="Profile"
         className="profile-pic"
-        key={form.profilePic}
+        key={user.profilePic}
       />
 
       {editMode ? (
         <form onSubmit={handleSave}>
           <input
             name="name"
-            value={form.name}
+            value={form?.name || ''}
             onChange={handleChange}
-            placeholder="Name"
             required
           />
 
           <input
             name="grade"
-            value={form.grade}
+            value={form?.grade || ''}
             onChange={handleChange}
-            placeholder="Grade"
             required
           />
 
           <input
             name="subjects"
-            value={Array.isArray(form.subjects) ? form.subjects.join(', ') : form.subjects}
-            onChange={e => setForm({ ...form, subjects: e.target.value })}
-            placeholder="Subjects"
+            value={
+              Array.isArray(form?.subjects)
+                ? form.subjects.join(', ')
+                : form?.subjects || ''
+            }
+            onChange={e =>
+              setForm({ ...form, subjects: e.target.value })
+            }
             required
           />
 
@@ -95,7 +101,9 @@ const ProfileStudent = ({ user, updateUser }) => {
           />
 
           <button type="submit">Save</button>
-          <button type="button" onClick={() => setEditMode(false)}>Cancel</button>
+          <button type="button" onClick={() => setEditMode(false)}>
+            Cancel
+          </button>
         </form>
       ) : (
         <>
@@ -108,8 +116,6 @@ const ProfileStudent = ({ user, updateUser }) => {
           </button>
         </>
       )}
-
-      <ToastContainer />
     </div>
   );
 };
