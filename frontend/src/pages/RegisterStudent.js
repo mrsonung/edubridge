@@ -14,7 +14,7 @@ const RegisterStudent = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/auth/register/student', {
+      await axios.post(`${process.env.REACT_APP_API_URL}/auth/register/student`, {
         ...form,
         subjects: form.subjects.split(',').map(s => s.trim())
       });
@@ -28,7 +28,9 @@ const RegisterStudent = () => {
   };
 
   const handleGoogleSuccess = credentialResponse => {
-    axios.post('http://localhost:5000/auth/google-signup', { credential: credentialResponse.credential })
+    axios.post(`${process.env.REACT_APP_API_URL}/auth/google-signup`, {
+  credential: credentialResponse.credential
+})
       .then(() => {
         toast.success('Signed up with Google!');
         setTimeout(() => {

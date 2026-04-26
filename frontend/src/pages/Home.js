@@ -13,7 +13,7 @@ const Home = () => {
   const menuRef = useRef();
 
   useEffect(() => {
-    fetch('http://localhost:5000/auth/teachers')
+    fetch(`${process.env.REACT_APP_API_URL}/auth/teachers`)
       .then(res => res.json())
       .then(data => setTeachers(data))
       .catch(console.error);

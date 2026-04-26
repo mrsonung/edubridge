@@ -23,7 +23,7 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
   // ✅ Load teacher
   useEffect(() => {
     if (!propUser && viewingId) {
-      axios.get(`http://localhost:5000/auth/teacher/${viewingId}`)
+      axios.get(`${process.env.REACT_APP_API_URL}/auth/teacher/${viewingId}`)
         .then(res => {
           console.log("TEACHER:", res.data);
           setTeacher(res.data);
@@ -39,7 +39,7 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
 
     console.log("CALL API WITH:", teacher._id);
 
-    axios.get(`http://localhost:5000/booking/teacher/${teacher._id}`)
+    axios.get(`${process.env.REACT_APP_API_URL}/booking/teacher/${teacher._id}`)
       .then(res => {
         console.log("BOOKINGS RESPONSE:", res.data);
         setBookings(res.data);
@@ -70,8 +70,8 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
     try {
       const token = localStorage.getItem("token");
 
-      const res = await axios.put(
-        `http://localhost:5000/auth/update/teacher/${teacher._id}`,
+     const res = await axios.put(
+  `${process.env.REACT_APP_API_URL}/auth/update/teacher/${teacher._id}`,
         data,
         {
           headers: {
@@ -129,7 +129,7 @@ const totalEarnings = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
         toast.success("Payment Successful 🎉");
 
         try {
-          await axios.post("http://localhost:5000/booking/create", {
+          await axios.post(`${process.env.REACT_APP_API_URL}/booking/create`, {
             teacherId: teacher._id,
             studentId: loggedInUserId,
             paymentId: response.razorpay_payment_id,

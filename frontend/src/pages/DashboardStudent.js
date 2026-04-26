@@ -34,7 +34,7 @@ const DashboardStudent = () => {
     setShowConfirm(false);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/auth/delete-account', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/delete-account`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

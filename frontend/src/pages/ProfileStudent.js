@@ -23,7 +23,7 @@ const ProfileStudent = ({ user, updateUser }) => {
     try {
       const token = localStorage.getItem('token');
       const res = await axios.put(
-        `http://localhost:5000/auth/update/student/${user._id}`,
+  `${process.env.REACT_APP_API_URL}/auth/update/student/${user._id}`,
         data,
         {
           headers: {

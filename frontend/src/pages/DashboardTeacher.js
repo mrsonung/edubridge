@@ -19,7 +19,7 @@ const DashboardTeacher = () => {
       const token = localStorage.getItem('token');
 
       // Fetch students interested in this teacher
-      fetch('http://localhost:5000/auth/teacher/students', {
+      fetch(`${process.env.REACT_APP_API_URL}/auth/teacher/students`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())
@@ -55,7 +55,7 @@ const DashboardTeacher = () => {
     setShowConfirm(false);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/auth/delete-account', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/delete-account`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
