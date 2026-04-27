@@ -2,6 +2,8 @@
                 /* =========================================
    1. DESIGN TOKENS & VARIABLES
    ========================================= */
+
+   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 :root {
   /* Brand Colors */
   --primary: #0B3C6D;
@@ -2056,3 +2058,4 @@ form button[type="submit"]:active {
 .book-btn:active {
   transform: scale(0.95);
 }
+

@@ -33,18 +33,22 @@ const Home = () => {
 
           <div className="hero-actions">
             <button
-              className="hero-btn primary"
-              onClick={() => navigate('/teachers')}
-            >
-              Book Your Teacher
-            </button>
+  className="hero-btn primary"
+  onClick={() => {
+    document.getElementById("teachers")?.scrollIntoView({ behavior: "smooth" });
+  }}
+>
+  Book Your Teacher
+</button>
 
-            <button
-              className="hero-btn secondary"
-              onClick={() => navigate('/about')}
-            >
-              Learn More
-            </button>
+<button
+  className="hero-btn secondary"
+  onClick={() => {
+    document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
+  }}
+>
+  Learn More
+</button>
           </div>
         </div>
 
