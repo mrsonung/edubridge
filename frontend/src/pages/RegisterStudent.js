@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { useNavigate, Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 
@@ -53,16 +53,41 @@ const handleLogin = (data) => {
   console.log("LOGIN DATA:", data);
 };
 
-  const handleGoogleSuccess = (credentialResponse) => {
-  setGoogleData(credentialResponse.credential);
-  setShowRoleModal(true); // 🔥 open modal
+const handleGoogleSuccess = async (credentialResponse) => {
+  try {
+    const res = await axios.post(
+      `${process.env.REACT_APP_API_URL}/auth/google-auth`,
+      {
+        credential: credentialResponse.credential
+      }
+    );
+
+    // 🆕 NEW USER
+    if (res.data.newUser) {
+      setGoogleData(credentialResponse); // 🔥 IMPORTANT
+      setShowRoleModal(true);
+      return;
+    }
+
+    // ✅ EXISTING USER
+    handleLogin(res.data);
+
+  } catch (err) {
+    console.log("GOOGLE ERROR:", err);
+    toast.error("Google signup failed");
+  }
 };
 const handleRoleSelect = async (role) => {
   try {
+    if (!googleData?.credential) {
+      toast.error("Something went wrong. Try again.");
+      return;
+    }
+
     const res = await axios.post(
-      `${process.env.REACT_APP_API_URL}/auth/google-signup`,
+      `${process.env.REACT_APP_API_URL}/auth/google-auth`,
       {
-        credential: googleData,
+        credential: googleData.credential,
         role
       }
     );
@@ -70,8 +95,9 @@ const handleRoleSelect = async (role) => {
     setShowRoleModal(false); // close modal
     handleLogin(res.data);
 
-  } catch {
-    toast.error("Google signup failed");
+  } catch (err) {
+    console.log("ROLE ERROR:", err);
+    toast.error("Failed to complete signup");
   }
 };
   const handleGoogleError = () => {
@@ -131,7 +157,7 @@ const handleRoleSelect = async (role) => {
   </div>
 )}
 
-      <ToastContainer position="top-center" />
+      
     </>
   );
 };
