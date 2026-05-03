@@ -8,6 +8,8 @@ const authenticate = require('../middleware/authenticate');
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../config/cloudinary");
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const router = express.Router();
 
@@ -111,7 +113,50 @@ router.post('/login', async (req, res) => {
 
   res.json({ token, user });
 });
+router.post("/google-signup", async (req, res) => {
+  try {
+    const { credential } = req.body;
 
+    if (!credential) {
+      return res.status(400).json({ error: "No credential received" });
+    }
+
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    const { email, name, picture } = payload;
+
+    // 🔥 Check in student collection
+    let user = await Student.findOne({ email });
+
+    if (!user) {
+      user = await Student.create({
+        name,
+        email,
+        password: "google_auth", // dummy
+        grade: "N/A",
+        subjects: [],
+        profilePic: picture
+      });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: "student" },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({ token, user });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Google signup failed" });
+  }
+});
 // =======================
 // 👨‍🎓 UPDATE STUDENT
 // =======================
