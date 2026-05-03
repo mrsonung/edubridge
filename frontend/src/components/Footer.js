@@ -53,6 +53,8 @@ const Footer = () => (
     
     <div className="footer-bottom">
       © 2025 EduBridge. Learn with the best! By Nigam Sahab
+
+      
     </div>
   </footer>
 );

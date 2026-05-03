@@ -100,8 +100,15 @@ const ProfileStudent = ({ user, updateUser }) => {
             onChange={handlePicChange}
           />
 
-          <button type="submit">Save</button>
-          <button type="button" onClick={() => setEditMode(false)}>
+          <button type="submit" className="btn btn-save">
+            Save
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-cancel"
+            onClick={() => setEditMode(false)}
+          >
             Cancel
           </button>
         </form>
@@ -111,7 +118,7 @@ const ProfileStudent = ({ user, updateUser }) => {
           <p><strong>Grade:</strong> {user.grade}</p>
           <p><strong>Subjects:</strong> {Array.isArray(user.subjects) ? user.subjects.join(', ') : user.subjects}</p>
 
-          <button onClick={() => setEditMode(true)}>
+          <button className="btn btn-edit" onClick={() => setEditMode(true)}>
             Edit Profile
           </button>
         </>

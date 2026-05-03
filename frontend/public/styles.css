@@ -336,6 +336,89 @@ section {
 }
 .button-group .btn { flex: 1; margin-top: 0; }
 
+.btn{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+gap:8px;
+padding:12px 26px;
+border-radius:999px;
+border:none;
+font-size:.95rem;
+font-weight:600;
+cursor:pointer;
+transition:all .25s ease;
+font-family:inherit;
+box-shadow:var(--shadow-sm)
+}
+
+.btn:hover{
+transform:translateY(-2px);
+box-shadow:var(--shadow-md)
+}
+
+.btn:active{
+transform:scale(.96)
+}
+
+.btn:focus{
+outline:none;
+box-shadow:0 0 0 3px rgba(11,60,109,.2)
+}
+
+.btn-primary{
+background:var(--primary);
+color:#fff
+}
+
+.btn-primary:hover{
+background:var(--primary-light)
+}
+
+.btn-edit{
+background:linear-gradient(135deg,#4facfe,#00c6ff);
+color:#fff
+}
+
+.btn-edit:hover{
+filter:brightness(1.05)
+}
+
+.btn-save{
+background:linear-gradient(135deg,#27AE60,#2ecc71);
+color:#fff
+}
+
+.btn-save:hover{
+filter:brightness(1.05)
+}
+
+.btn-cancel{
+background:#eef2f7;
+color:var(--text-main)
+}
+
+.btn-cancel:hover{
+background:#e1e7ef
+}
+
+.book-btn{
+background:linear-gradient(135deg,#F4B400,#ffcc33);
+color:#000;
+font-weight:700;
+padding:13px 28px;
+border-radius:999px;
+box-shadow:0 6px 18px rgba(244,180,0,.35)
+}
+
+.book-btn:hover{
+transform:translateY(-3px) scale(1.04);
+box-shadow:0 12px 28px rgba(244,180,0,.55)
+}
+
+.book-btn:active{
+transform:scale(.95)
+}
 /* =========================================
    7. CARDS (Features & Teachers)
    ========================================= */
@@ -915,6 +998,85 @@ form button:hover { background: var(--primary-light); }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .dashboard-wrapper { flex-direction: column; }
   .dashboard-main, .dashboard-info, .dashboard-profile { width: 100%; }
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 26px;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+/* PRIMARY (main action) */
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--primary-light);
+}
+
+/* EDIT BUTTON */
+.btn-edit {
+  background: linear-gradient(135deg, #4facfe, #00c6ff);
+  color: #fff;
+}
+.btn-edit:hover {
+  filter: brightness(1.05);
+}
+
+/* SAVE BUTTON */
+.btn-save {
+  background: linear-gradient(135deg, #27AE60, #2ecc71);
+  color: #fff;
+}
+.btn-save:hover {
+  filter: brightness(1.05);
+}
+
+/* CANCEL BUTTON */
+.btn-cancel {
+  background: #eef2f7;
+  color: var(--text-main);
+}
+.btn-cancel:hover {
+  background: #e1e7ef;
+}
+
+/* BOOK SLOT BUTTON (🔥 premium) */
+.book-btn {
+  background: linear-gradient(135deg, #F4B400, #ffcc33);
+  color: #000;
+  font-weight: 700;
+  padding: 13px 28px;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(244, 180, 0, 0.35);
+}
+
+.book-btn:hover {
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 12px 28px rgba(244, 180, 0, 0.55);
+}
+
+.book-btn:active {
+  transform: scale(0.95);
 }
 
 @media (max-width: 480px) {

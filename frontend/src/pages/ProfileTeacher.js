@@ -160,8 +160,11 @@ const ProfileTeacher = ({ user: propUser }) => {
 
           <input type="file" onChange={handlePicChange} />
 
-          <button type="submit">Save</button>
-          <button type="button" onClick={() => setEditMode(false)}>Cancel</button>
+          <button type="submit" className="btn btn-save">Save</button>
+
+<button type="button" className="btn btn-cancel" onClick={() => setEditMode(false)}>
+  Cancel
+</button>
         </form>
       ) : (
         <>
@@ -172,9 +175,9 @@ const ProfileTeacher = ({ user: propUser }) => {
           <p><strong>Location:</strong> {teacher.location}</p>
 
           {!isOwner && (
-            <button onClick={handleBooking}>
-              Book Your Slot
-            </button>
+            <button className="btn book-btn" onClick={handleBooking}>
+  Book Your Slot
+</button>
           )}
 
           {isOwner && (
@@ -197,9 +200,9 @@ const ProfileTeacher = ({ user: propUser }) => {
                 </ul>
               )}
 
-              <button onClick={() => setEditMode(true)}>
-                Edit Profile
-              </button>
+              <button className="btn btn-edit" onClick={() => setEditMode(true)}>
+  Edit Profile
+</button>
             </>
           )}
         </>
