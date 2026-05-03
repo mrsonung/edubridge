@@ -111,11 +111,11 @@ router.post('/login', async (req, res) => {
     { expiresIn: "1d" }
   );
 
-  res.json({ token, user });
+  res.json({ token, user, role });
 });
 router.post("/google-signup", async (req, res) => {
   try {
-    const { credential } = req.body;
+    const { credential, role } = req.body;
 
     if (!credential) {
       return res.status(400).json({ error: "No credential received" });
@@ -127,30 +127,66 @@ router.post("/google-signup", async (req, res) => {
     });
 
     const payload = ticket.getPayload();
-
     const { email, name, picture } = payload;
 
-    // 🔥 Check in student collection
-    let user = await Student.findOne({ email });
+    // 🔥 Check both collections
+    let student = await Student.findOne({ email });
+    let teacher = await Teacher.findOne({ email });
 
-    if (!user) {
-      user = await Student.create({
-        name,
-        email,
-        password: "google_auth", // dummy
-        grade: "N/A",
-        subjects: [],
-        profilePic: picture
-      });
+    let user;
+    let userRole;
+
+    if (student) {
+      user = student;
+      userRole = "student";
+    } else if (teacher) {
+      user = teacher;
+      userRole = "teacher";
+    } else {
+      // ❌ New user → role required
+      if (!role) {
+        return res.status(200).json({
+          newUser: true,
+          email,
+          name,
+          picture
+        });
+      }
+
+      // 🔥 Create based on role
+      if (role === "student") {
+        user = await Student.create({
+          name,
+          email,
+          password: "google_auth",
+          grade: "",
+          subjects: [],
+          profilePic: picture
+        });
+      } else if (role === "teacher") {
+        user = await Teacher.create({
+          name,
+          email,
+          password: "google_auth",
+          grades: [],
+          subjects: [],
+          qualification: "",
+          profilePic: picture,
+          registrationPaid: false
+        });
+      }
+
+      userRole = role;
     }
 
+    // 🔥 JWT
     const token = jwt.sign(
-      { id: user._id, role: "student" },
+      { id: user._id, role: userRole },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    res.json({ token, user });
+    res.json({ token, user, role: userRole });
 
   } catch (err) {
     console.error(err);
