@@ -196,28 +196,33 @@ router.post("/google-signup", async (req, res) => {
 // =======================
 // 👨‍🎓 UPDATE STUDENT
 // =======================
-router.put('/update/student/:id', upload.single('profilePic'), async (req, res) => {
+router.put("/update/student/:id", upload.single("profilePic"), async (req, res) => {
   try {
-    const updateFields = { ...req.body };
+    const { name, grade, subjects } = req.body;
 
+    let updatedData = {
+      name,
+      grade,
+      subjects: subjects ? subjects.split(",").map(s => s.trim()) : []
+    };
+
+    // ✅ SAFE IMAGE UPLOAD
     if (req.file) {
-      updateFields.profilePic = req.file.path; // ✅ Cloudinary URL
+      const result = await cloudinary.uploader.upload(req.file.path);
+      updatedData.profilePic = result.secure_url;
     }
 
-    if (updateFields.subjects && typeof updateFields.subjects === "string") {
-      updateFields.subjects = updateFields.subjects.split(',').map(s => s.trim());
-    }
-
-    const updated = await Student.findByIdAndUpdate(
+    const user = await Student.findByIdAndUpdate(
       req.params.id,
-      updateFields,
+      updatedData,
       { new: true }
     );
 
-    res.json(updated);
+    res.json(user);
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("UPDATE ERROR:", err); // 🔥 IMPORTANT
+    res.status(500).json({ error: "Failed to update profile" });
   }
 });
 
