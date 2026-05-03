@@ -27,7 +27,7 @@ router.get("/teacher/:id", async (req, res) => {
     res.json(bookings);
 
   } catch (err) {
-    console.log("ERROR:", err); // 🔥 IMPORTANT DEBUG
+    console.log("ERROR:", err); // 
     res.status(500).json({ error: "Failed to fetch bookings" });
   }
 });
