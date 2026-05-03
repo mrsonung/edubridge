@@ -9,32 +9,36 @@ const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../config/cloudinary");
 const { OAuth2Client } = require("google-auth-library");
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const router = express.Router();
 
-// ✅ CLOUDINARY STORAGE
+// =======================
+// CLOUDINARY
+// =======================
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
+  cloudinary,
   params: {
     folder: "edubridge",
     allowed_formats: ["jpg", "jpeg", "png"],
   },
 });
-
 const upload = multer({ storage });
 
 // =======================
-// 👨‍🎓 STUDENT REGISTER
+// STUDENT REGISTER
 // =======================
 router.post('/register/student', async (req, res) => {
-  const { name, email, password, grade, subjects } = req.body;
-
-  if (!name || !email || !password || !grade || !subjects) {
-    return res.status(400).json({ error: "All fields required" });
-  }
-
   try {
+    const { name, email, password, grade, subjects } = req.body;
+
+    if (!name || !email || !password || !grade || !subjects) {
+      return res.status(400).json({ error: "All fields required" });
+    }
+
+    const existing = await Student.findOne({ email });
+    if (existing) return res.status(400).json({ error: "User already exists" });
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const student = await Student.create({
@@ -42,41 +46,34 @@ router.post('/register/student', async (req, res) => {
       email,
       password: hashedPassword,
       grade,
-      subjects: Array.isArray(subjects)
-        ? subjects
-        : subjects.split(',').map(s => s.trim())
+      subjects: subjects.split(',').map(s => s.trim())
     });
 
     res.json({ message: "Student registered", student });
 
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
 // =======================
-// 👨‍🏫 TEACHER REGISTER
+// TEACHER REGISTER
 // =======================
 router.post('/register/teacher', async (req, res) => {
-  const { name, email, password, grades, subjects, qualification } = req.body;
-
-  if (!name || !email || !password || !grades || !subjects || !qualification) {
-    return res.status(400).json({ error: "All fields required" });
-  }
-
   try {
+    const { name, email, password, grades, subjects, qualification } = req.body;
+
+    const existing = await Teacher.findOne({ email });
+    if (existing) return res.status(400).json({ error: "User already exists" });
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const teacher = await Teacher.create({
       name,
       email,
       password: hashedPassword,
-      grades: Array.isArray(grades)
-        ? grades
-        : grades.split(',').map(g => g.trim()),
-      subjects: Array.isArray(subjects)
-        ? subjects
-        : subjects.split(',').map(s => s.trim()),
+      grades: grades.split(',').map(g => g.trim()),
+      subjects: subjects.split(',').map(s => s.trim()),
       qualification,
       registrationPaid: false
     });
@@ -84,76 +81,68 @@ router.post('/register/teacher', async (req, res) => {
     res.json({ message: "Teacher registered", teacher });
 
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
 // =======================
-// 🔐 LOGIN
+// LOGIN
 // =======================
 router.post('/login', async (req, res) => {
-  const { email, password, role } = req.body;
+  try {
+    const { email, password, role } = req.body;
 
-  let user;
+    let user;
+    if (role === 'student') user = await Student.findOne({ email });
+    else if (role === 'teacher') user = await Teacher.findOne({ email });
+    else return res.status(400).json({ error: "Role required" });
 
-  if (role === 'student') user = await Student.findOne({ email });
-  else if (role === 'teacher') user = await Teacher.findOne({ email });
-  else return res.status(400).json({ error: "Role required" });
+    if (!user) return res.status(400).json({ error: "User not found" });
 
-  if (!user) return res.status(400).json({ error: "User not found" });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ error: "Invalid password" });
 
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(400).json({ error: "Invalid password" });
+    const token = jwt.sign(
+      { id: user._id, role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
 
-  const token = jwt.sign(
-    { id: user._id, role },
-    process.env.JWT_SECRET,
-    { expiresIn: "1d" }
-  );
+    res.json({ token, user, role });
 
-  res.json({ token, user, role });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
-router.post("/google-signup", async (req, res) => {
+
+// =======================
+// GOOGLE AUTH (LOGIN + SIGNUP)
+// =======================
+router.post("/google-auth", async (req, res) => {
   try {
     const { credential, role } = req.body;
-
-    if (!credential) {
-      return res.status(400).json({ error: "No credential received" });
-    }
 
     const ticket = await client.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
 
-    const payload = ticket.getPayload();
-    const { email, name, picture } = payload;
+    const { email, name, picture } = ticket.getPayload();
 
-    // 🔥 Check both collections
-    let student = await Student.findOne({ email });
-    let teacher = await Teacher.findOne({ email });
+    let user = await Student.findOne({ email });
+    let userRole = "student";
 
-    let user;
-    let userRole;
+    if (!user) {
+      user = await Teacher.findOne({ email });
+      if (user) userRole = "teacher";
+    }
 
-    if (student) {
-      user = student;
-      userRole = "student";
-    } else if (teacher) {
-      user = teacher;
-      userRole = "teacher";
-    } else {
-      // ❌ New user → role required
+    // NEW USER
+    if (!user) {
       if (!role) {
-        return res.status(200).json({
-          newUser: true,
-          email,
-          name,
-          picture
-        });
+        return res.json({ newUser: true, email, name, picture });
       }
 
-      // 🔥 Create based on role
       if (role === "student") {
         user = await Student.create({
           name,
@@ -163,7 +152,9 @@ router.post("/google-signup", async (req, res) => {
           subjects: [],
           profilePic: picture
         });
-      } else if (role === "teacher") {
+      }
+
+      if (role === "teacher") {
         user = await Teacher.create({
           name,
           email,
@@ -179,7 +170,6 @@ router.post("/google-signup", async (req, res) => {
       userRole = role;
     }
 
-    // 🔥 JWT
     const token = jwt.sign(
       { id: user._id, role: userRole },
       process.env.JWT_SECRET,
@@ -190,11 +180,12 @@ router.post("/google-signup", async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Google signup failed" });
+    res.status(500).json({ error: "Google auth failed" });
   }
 });
+
 // =======================
-// 👨‍🎓 UPDATE STUDENT
+// UPDATE STUDENT
 // =======================
 router.put("/update/student/:id", upload.single("profilePic"), async (req, res) => {
   try {
@@ -203,13 +194,11 @@ router.put("/update/student/:id", upload.single("profilePic"), async (req, res) 
     let updatedData = {
       name,
       grade,
-      subjects: subjects ? subjects.split(",").map(s => s.trim()) : []
+      subjects: subjects?.split(",").map(s => s.trim()) || []
     };
 
-    // ✅ SAFE IMAGE UPLOAD
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path);
-      updatedData.profilePic = result.secure_url;
+      updatedData.profilePic = req.file.path;
     }
 
     const user = await Student.findByIdAndUpdate(
@@ -221,27 +210,26 @@ router.put("/update/student/:id", upload.single("profilePic"), async (req, res) 
     res.json(user);
 
   } catch (err) {
-    console.error("UPDATE ERROR:", err); // 🔥 IMPORTANT
-    res.status(500).json({ error: "Failed to update profile" });
+    res.status(500).json({ error: err.message });
   }
 });
 
 // =======================
-// 👨‍🏫 UPDATE TEACHER
+// UPDATE TEACHER
 // =======================
 router.put('/update/teacher/:id', upload.single('profilePic'), async (req, res) => {
   try {
-    const updateFields = { ...req.body };
+    let updateFields = { ...req.body };
 
     if (req.file) {
-      updateFields.profilePic = req.file.path; // ✅ Cloudinary URL
+      updateFields.profilePic = req.file.path;
     }
 
-    if (updateFields.grades && typeof updateFields.grades === "string") {
+    if (typeof updateFields.grades === "string") {
       updateFields.grades = updateFields.grades.split(',').map(g => g.trim());
     }
 
-    if (updateFields.subjects && typeof updateFields.subjects === "string") {
+    if (typeof updateFields.subjects === "string") {
       updateFields.subjects = updateFields.subjects.split(',').map(s => s.trim());
     }
 
@@ -259,7 +247,7 @@ router.put('/update/teacher/:id', upload.single('profilePic'), async (req, res) 
 });
 
 // =======================
-// 📋 GET ALL TEACHERS
+// GET TEACHERS
 // =======================
 router.get('/teachers', async (req, res) => {
   try {
@@ -271,36 +259,31 @@ router.get('/teachers', async (req, res) => {
 });
 
 // =======================
-// 🔍 GET SINGLE TEACHER
+// GET SINGLE TEACHER
 // =======================
 router.get('/teacher/:id', async (req, res) => {
   try {
     const teacher = await Teacher.findById(req.params.id);
-
-    if (!teacher) {
-      return res.status(404).json({ error: "Teacher not found" });
-    }
+    if (!teacher) return res.status(404).json({ error: "Not found" });
 
     res.json(teacher);
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 // =======================
-// 🗑 DELETE ACCOUNT
+// DELETE ACCOUNT
 // =======================
 router.delete('/delete-account', authenticate, async (req, res) => {
   try {
     if (req.role === 'student') {
       await Student.findByIdAndDelete(req.user._id);
-    } else if (req.role === 'teacher') {
+    } else {
       await Teacher.findByIdAndDelete(req.user._id);
     }
 
-    res.json({ message: "Account deleted" });
-
+    res.json({ message: "Deleted" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
