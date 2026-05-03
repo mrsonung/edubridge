@@ -172,6 +172,47 @@ section {
   border-color: var(--primary);
 }
 
+.nav-link-btn {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 6px 0;
+  position: relative;
+  transition: color 0.2s ease;
+  font-family: inherit;
+  font: bold;
+}
+
+/* underline effect (same as links) */
+.nav-link-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* hover effect */
+.nav-link-btn:hover {
+  color: var(--primary);
+}
+
+.nav-link-btn:hover::after {
+  width: 100%;
+}
+
+/* active click feel */
+.nav-link-btn:active {
+  transform: scale(0.95);
+}
+
 .home-title {
   font-size: 2rem;
   font-weight: 800;

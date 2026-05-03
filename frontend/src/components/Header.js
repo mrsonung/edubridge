@@ -44,28 +44,38 @@ const Header = () => {
       </Link>
 
       <nav className={`nav-links ${mobileNav ? "active" : ""}`}>
-        <a onClick={() => {
-    document.getElementById("home")?.scrollIntoView({ behavior: "smooth" });
-    setMobileNav(false);
-  }}>Home</a>
-        <a
-  onClick={() => {
-    document.getElementById("teachers")?.scrollIntoView({ behavior: "smooth" });
-    setMobileNav(false);
-  }}
->
-  Teachers
-</a>
+  
+  <button
+    className="nav-link-btn"
+    onClick={() => {
+      document.getElementById("home")?.scrollIntoView({ behavior: "smooth" });
+      setMobileNav(false);
+    }}
+  >
+    Home
+  </button>
 
-<a
-  onClick={() => {
-    document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
-    setMobileNav(false);
-  }}
->
-  About
-</a>
-      </nav>
+  <button
+    className="nav-link-btn"
+    onClick={() => {
+      document.getElementById("teachers")?.scrollIntoView({ behavior: "smooth" });
+      setMobileNav(false);
+    }}
+  >
+    Teachers
+  </button>
+
+  <button
+    className="nav-link-btn"
+    onClick={() => {
+      document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
+      setMobileNav(false);
+    }}
+  >
+    About
+  </button>
+
+</nav>
 
       <div className="nav-right">
         {!user ? (
