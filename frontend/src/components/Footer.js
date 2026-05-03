@@ -45,16 +45,14 @@ const Footer = () => (
         <h4>Follow us</h4>
         <div className="footer-social">
           <a href="/"><i className="fa-brands fa-facebook-f"></i></a>
-<a href="/"><i className="fa-brands fa-instagram"></i></a>
-<a href="/"><i className="fa-brands fa-linkedin-in"></i></a>
+          <a href="/"><i className="fa-brands fa-instagram"></i></a>
+          <a href="/"><i className="fa-brands fa-linkedin-in"></i></a>
         </div>
       </div>
     </div>
-    
-    <div className="footer-bottom">
-      © 2025 EduBridge. Learn with the best! By Nigam Sahab
 
-      
+    <div className="footer-bottom">
+      © {new Date().getFullYear()} EduBridge. All rights reserved. Kr Sonu Nigam
     </div>
   </footer>
 );

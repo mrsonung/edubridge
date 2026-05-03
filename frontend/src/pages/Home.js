@@ -128,7 +128,6 @@ const Home = () => {
       {/* ABOUT */}
       <section className="about" id="about">
         <h2>About EduBridge</h2>
-
         
         <p>
           EduBridge is a platform that connects students with qualified teachers

@@ -12,6 +12,7 @@ import ProfileTeacher from './pages/ProfileTeacher';
 import ProfileTeacherWrapper from './wrappers/ProfileTeacherWrapper';
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import Layout from './layout/Layout';
 
 const clientId = "710819961819-pb1h2j8b2lj5i3ovrst0gn3haj7l2jdh.apps.googleusercontent.com";
 
@@ -47,6 +48,7 @@ function App() {
           />
           
           <Route path="/payment" element={<Payment />} />
+          <Route path="/" element={<Layout><Home /></Layout>} />
         </Routes>
       </Router>
     </GoogleOAuthProvider>
