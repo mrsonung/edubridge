@@ -8,6 +8,8 @@ const authenticate = require('../middleware/authenticate');
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../config/cloudinary");
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const router = express.Router();
 
@@ -109,34 +111,125 @@ router.post('/login', async (req, res) => {
     { expiresIn: "1d" }
   );
 
-  res.json({ token, user });
+  res.json({ token, user, role });
 });
+router.post("/google-auth", async (req, res) => {
+  try {
+    const { credential, role } = req.body;
 
+    if (!credential) {
+      return res.status(400).json({ error: "No credential provided" });
+    }
+
+    // ✅ VERIFY GOOGLE TOKEN
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture } = payload;
+
+    let user = null;
+    let userRole = null;
+
+    // 🔍 CHECK EXISTING USER
+    const student = await Student.findOne({ email });
+    const teacher = await Teacher.findOne({ email });
+
+    if (student) {
+      user = student;
+      userRole = "student";
+    } else if (teacher) {
+      user = teacher;
+      userRole = "teacher";
+    }
+
+    // 🆕 NEW USER
+    if (!user) {
+      if (!role) {
+        return res.status(200).json({
+          newUser: true,
+          email,
+          name,
+          picture
+        });
+      }
+
+      if (role === "student") {
+        user = await Student.create({
+          name,
+          email,
+          password: "google_auth",
+          grade: "",
+          subjects: [],
+          profilePic: picture
+        });
+      }
+
+      if (role === "teacher") {
+        user = await Teacher.create({
+          name,
+          email,
+          password: "google_auth",
+          grades: [],
+          subjects: [],
+          qualification: "",
+          profilePic: picture,
+          registrationPaid: false
+        });
+      }
+
+      userRole = role;
+    }
+
+    // 🔐 TOKEN
+    const token = jwt.sign(
+      { id: user._id, role: userRole },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({
+      token,
+      user,
+      role: userRole
+    });
+
+  } catch (err) {
+    console.error("GOOGLE AUTH ERROR:", err);
+    res.status(500).json({ error: "Google auth failed" });
+  }
+});
 // =======================
 // 👨‍🎓 UPDATE STUDENT
 // =======================
-router.put('/update/student/:id', upload.single('profilePic'), async (req, res) => {
+router.put("/update/student/:id", upload.single("profilePic"), async (req, res) => {
   try {
-    const updateFields = { ...req.body };
+    const { name, grade, subjects } = req.body;
 
+    let updatedData = {
+      name,
+      grade,
+      subjects: subjects ? subjects.split(",").map(s => s.trim()) : []
+    };
+
+    // ✅ SAFE IMAGE UPLOAD
     if (req.file) {
-      updateFields.profilePic = req.file.path; // ✅ Cloudinary URL
-    }
+  updatedData.profilePic = req.file.path; 
+}
 
-    if (updateFields.subjects && typeof updateFields.subjects === "string") {
-      updateFields.subjects = updateFields.subjects.split(',').map(s => s.trim());
-    }
-
-    const updated = await Student.findByIdAndUpdate(
+    const user = await Student.findByIdAndUpdate(
       req.params.id,
-      updateFields,
+      updatedData,
       { new: true }
     );
 
-    res.json(updated);
+    res.json(user);
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("UPDATE ERROR:", err); // 🔥 IMPORTANT
+    res.status(500).json({ error: "Failed to update profile" });
   }
 });
 
