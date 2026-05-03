@@ -23,7 +23,11 @@ const ProfileStudent = ({ user, updateUser }) => {
     const data = new FormData();
     data.append('name', form.name);
     data.append('grade', form.grade);
-    data.append('subjects', form.subjects);
+   data.append('subjects', 
+  Array.isArray(form.subjects) 
+    ? form.subjects.join(",") 
+    : form.subjects
+);
 
     if (profilePic) {
       data.append('profilePic', profilePic);
@@ -71,6 +75,7 @@ const ProfileStudent = ({ user, updateUser }) => {
             name="name"
             value={form?.name || ''}
             onChange={handleChange}
+            placeholder='Enter your name'
             required
           />
 
@@ -79,6 +84,7 @@ const ProfileStudent = ({ user, updateUser }) => {
             value={form?.grade || ''}
             onChange={handleChange}
             required
+            placeholder='Enter Your Grade'
           />
 
           <input
@@ -92,6 +98,7 @@ const ProfileStudent = ({ user, updateUser }) => {
               setForm({ ...form, subjects: e.target.value })
             }
             required
+            placeholder='Enter Your Subject Use "," for more Subject'
           />
 
           <input

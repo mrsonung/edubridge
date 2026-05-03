@@ -64,28 +64,7 @@ const Login = () => {
         </p>
       </form>
 
-      {/* Google Sign-In Button */}
-      {/* <div style={{ marginTop: '20px', textAlign: 'center' }}>
-        <GoogleLogin
-          onSuccess={credentialResponse => {
-            axios.post('http://localhost:5000/auth/google-login', { credential: credentialResponse.credential })
-              .then((res) => {
-                localStorage.setItem('token', res.data.token);
-                localStorage.setItem('role', res.data.role);
-                localStorage.setItem('user', JSON.stringify(res.data.user));
-                toast.success('Logged in with Google!');
-                navigate('/');
-              })
-              .catch(() => toast.error('Google login failed.'));
-          }}
-          onError={() => {
-            toast.error('Google sign-in failed');
-          }}
-        />
-      </div> */}
 
-      {/* Toast notifications container */}
-      {/* <ToastContainer position="top-center" /> */}
     </>
   );
 };

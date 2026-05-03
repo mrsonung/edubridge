@@ -4,7 +4,7 @@ const Payment = () => {
 
   const handlePayment = () => {
     const options = {
-      key: "rzp_test_SiBDmK2Zlj6QOy", // apni key
+      key: "rzp_test_SiBDmK2Zlj6QOy", 
       amount: 50000, // ₹500
       currency: "INR",
       name: "EduBridge",

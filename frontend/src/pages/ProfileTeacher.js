@@ -139,6 +139,8 @@ const ProfileTeacher = ({ user: propUser }) => {
   };
 
   return (
+    <div className="page-container">
+  
     <div className="profile-section">
       <h2>Teacher Profile</h2>
 
@@ -213,6 +215,7 @@ const ProfileTeacher = ({ user: propUser }) => {
           )}
         </>
       )}
+    </div>
     </div>
   );
 };

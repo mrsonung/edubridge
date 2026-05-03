@@ -6,11 +6,22 @@ const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
 
-  const user = JSON.parse(localStorage.getItem('user'));
-  const role = localStorage.getItem("role");
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem('user'))
+  );
 
   const navigate = useNavigate();
   const menuRef = useRef();
+
+  // 🔥 SYNC USER STATE
+  useEffect(() => {
+    const syncUser = () => {
+      setUser(JSON.parse(localStorage.getItem('user')));
+    };
+
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -26,8 +37,11 @@ const Header = () => {
 
   const handleLogout = () => {
     localStorage.clear();
+    setUser(null);
     navigate("/login");
   };
+
+  const role = localStorage.getItem("role");
 
   const getDashboardRoute = () => {
     if (role === "teacher") return "/dashboard-teacher";
@@ -44,38 +58,16 @@ const Header = () => {
       </Link>
 
       <nav className={`nav-links ${mobileNav ? "active" : ""}`}>
-  
-  <button
-    className="nav-link-btn"
-    onClick={() => {
-      document.getElementById("home")?.scrollIntoView({ behavior: "smooth" });
-      setMobileNav(false);
-    }}
-  >
-    Home
-  </button>
-
-  <button
-    className="nav-link-btn"
-    onClick={() => {
-      document.getElementById("teachers")?.scrollIntoView({ behavior: "smooth" });
-      setMobileNav(false);
-    }}
-  >
-    Teachers
-  </button>
-
-  <button
-    className="nav-link-btn"
-    onClick={() => {
-      document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
-      setMobileNav(false);
-    }}
-  >
-    About
-  </button>
-
-</nav>
+        <button onClick={() => {
+    document.getElementById("home")?.scrollIntoView({ behavior: "smooth" });
+  }} className="nav-link-btn">Home</button>
+        <button onClick={() => {
+    document.getElementById("teachers")?.scrollIntoView({ behavior: "smooth" });
+  }} className="nav-link-btn">Teachers</button>
+        <button onClick={() => {
+    document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
+  }} className="nav-link-btn">About</button>
+      </nav>
 
       <div className="nav-right">
         {!user ? (
@@ -102,14 +94,14 @@ const Header = () => {
         )}
       </div>
 
-      <div 
-  className={`hamburger ${mobileNav ? "active" : ""}`} 
-  onClick={() => setMobileNav(!mobileNav)}
->
-  <span></span>
-  <span></span>
-  <span></span>
-</div>
+      <div
+        className={`hamburger ${mobileNav ? "active" : ""}`}
+        onClick={() => setMobileNav(!mobileNav)}
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
 
     </header>
   );
