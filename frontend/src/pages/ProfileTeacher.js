@@ -37,7 +37,7 @@ const ProfileTeacher = ({ user: propUser }) => {
 
     axios.get(`${process.env.REACT_APP_API_URL}/booking/teacher/${teacher._id}`)
       .then(res => setBookings(res.data))
-      .catch(() => {});
+      .catch(() => { });
   }, [teacher?._id]);
 
   if (!teacher) return <div>Loading...</div>;
@@ -130,7 +130,7 @@ const ProfileTeacher = ({ user: propUser }) => {
           );
 
           setBookings(res.data);
-        } catch {}
+        } catch { }
       }
     };
 
@@ -156,15 +156,21 @@ const ProfileTeacher = ({ user: propUser }) => {
           <input name="subjects" value={form.subjects || ''} onChange={handleChange} placeholder="Subjects" />
           <input name="experience" value={form.experience || ''} onChange={handleChange} placeholder="Experience" />
           <input name="location" value={form.location || ''} onChange={handleChange} placeholder="Location" />
-          <textarea name="bio" value={form.bio || ''} onChange={handleChange} placeholder="Bio" />
+          <textarea
+            name="bio"
+            value={form.bio || ''}
+            onChange={handleChange}
+            placeholder="Bio"
+            className="textarea-field"
+          />
 
           <input type="file" onChange={handlePicChange} />
 
           <button type="submit" className="btn btn-save">Save</button>
 
-<button type="button" className="btn btn-cancel" onClick={() => setEditMode(false)}>
-  Cancel
-</button>
+          <button type="button" className="btn btn-cancel" onClick={() => setEditMode(false)}>
+            Cancel
+          </button>
         </form>
       ) : (
         <>
@@ -176,8 +182,8 @@ const ProfileTeacher = ({ user: propUser }) => {
 
           {!isOwner && (
             <button className="btn book-btn" onClick={handleBooking}>
-  Book Your Slot
-</button>
+              Book Your Slot
+            </button>
           )}
 
           {isOwner && (
@@ -201,8 +207,8 @@ const ProfileTeacher = ({ user: propUser }) => {
               )}
 
               <button className="btn btn-edit" onClick={() => setEditMode(true)}>
-  Edit Profile
-</button>
+                Edit Profile
+              </button>
             </>
           )}
         </>
